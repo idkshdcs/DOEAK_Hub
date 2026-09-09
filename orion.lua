@@ -1,41 +1,53 @@
 -- ============================================================
--- orion.lua - Giao diện Orion cho doeak hub
+-- orion.lua - Giao diện Rayfield cho doeak hub
 -- ============================================================
 
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source"))()
 local player = game.Players.LocalPlayer
 local farmEnabled = false
 local farmThread = nil
 
 -- Tạo cửa sổ chính
-local Window = OrionLib:MakeWindow({
+local Window = Rayfield:CreateWindow({
     Name = "🐉 doeak hub",
-    HidePremium = false,
-    SaveConfig = true,
-    ConfigFolder = "doeak_hub"
+    Icon = "https://i.imgur.com/5Y7K1Qf.png", -- icon tùy chọn
+    LoadingTitle = "Đang tải doeak hub...",
+    LoadingSubtitle = "by doeak",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "doeak_hub",
+        FileName = "settings"
+    },
+    Discord = {
+        Enabled = false
+    },
+    KeySystem = false,
+    KeySettings = {
+        Title = "doeak hub",
+        Subtitle = "Nhập key",
+        Note = "Liên hệ tác giả để lấy key",
+        FileName = "key",
+        SaveKey = false,
+        Key = {"key1", "key2"} -- để trống nếu không dùng key
+    }
 })
 
 -- ===== TAB: AUTO FARM =====
-local FarmTab = Window:MakeTab({
-    Name = "Auto Farm",
-    Icon = "⚔️",
-    PremiumOnly = false
-})
+local FarmTab = Window:CreateTab("Auto Farm", "https://i.imgur.com/5Y7K1Qf.png")
 
 -- Khu vực thông tin
-FarmTab:AddParagraph({
-    Name = "Thông tin",
+FarmTab:CreateParagraph({
+    Title = "Thông tin",
     Content = "Level hiện tại: " .. player.Level
 })
 
 -- Toggle bật/tắt farm
-FarmTab:AddToggle({
+FarmTab:CreateToggle({
     Name = "Bật Auto Farm",
-    Default = false,
+    CurrentValue = false,
     Callback = function(Value)
         farmEnabled = Value
         if Value then
-            -- Gọi hàm farm từ auto_farm.lua
             if not farmThread then
                 farmThread = task.spawn(function()
                     while farmEnabled do
@@ -60,29 +72,28 @@ FarmTab:AddToggle({
 })
 
 -- Chọn chế độ Quest
-FarmTab:AddDropdown({
+FarmTab:CreateDropdown({
     Name = "Chế độ Quest",
-    Default = "Có Quest",
     Options = {"Có Quest", "Không Quest"},
+    CurrentOption = "Có Quest",
     Callback = function(Value)
         _G.QuestMode = Value
     end
 })
 
 -- Thanh trượt delay đánh
-FarmTab:AddSlider({
+FarmTab:CreateSlider({
     Name = "Delay đánh (giây)",
-    Min = 0.3,
-    Max = 5,
-    Default = 0.5,
+    Range = {0.3, 5},
     Increment = 0.1,
+    CurrentValue = 0.5,
     Callback = function(Value)
         _G.AttackDelay = Value
     end
 })
 
 -- Nút về đảo an toàn
-FarmTab:AddButton({
+FarmTab:CreateButton({
     Name = "Về đảo an toàn",
     Callback = function()
         _G.GoToSafeZone()
@@ -90,22 +101,21 @@ FarmTab:AddButton({
 })
 
 -- ===== TAB: THÔNG TIN =====
-local InfoTab = Window:MakeTab({
-    Name = "Thông tin",
-    Icon = "ℹ️",
-    PremiumOnly = false
-})
+local InfoTab = Window:CreateTab("Thông tin", "https://i.imgur.com/5Y7K1Qf.png")
 
-InfoTab:AddParagraph({
-    Name = "Hướng dẫn",
+InfoTab:CreateParagraph({
+    Title = "Hướng dẫn sử dụng",
     Content = "1. Bật Auto Farm\n2. Chọn chế độ Quest\n3. Điều chỉnh delay đánh\n4. Farm sẽ tự động tìm quái phù hợp với level"
 })
 
 -- ===== KHAI BÁO BIẾN TOÀN CỤC =====
 _G.QuestMode = "Có Quest"
 _G.AttackDelay = 0.5
-_G.GoToSafeZone = function() end -- Sẽ được gán từ auto_farm.lua
-_G.FarmTick = function() end    -- Sẽ được gán từ auto_farm.lua
-_G.StopFarm = function() end    -- Sẽ được gán từ auto_farm.lua
+_G.GoToSafeZone = function() end
+_G.FarmTick = function() end
+_G.StopFarm = function() end
 
-OrionLib:Init()
+-- Khởi chạy Rayfield
+Rayfield:LoadConfiguration()
+
+print("✅ Rayfield UI loaded!")
