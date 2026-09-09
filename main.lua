@@ -1,94 +1,68 @@
 -- ============================================================
--- doeak hub - Auto Farm Blox Fruit
--- UI tự tạo, không phụ thuộc thư viện
+-- main.lua - doeak hub (UI tự tạo + auto farm tích hợp)
 -- ============================================================
+
+print("🐉 Loading doeak hub...")
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
-
 local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local hrp = character:WaitForChild("HumanoidRootPart")
 
--- ============================================================
--- DỮ LIỆU ĐẢO
--- ============================================================
-
+-- ===== DỮ LIỆU ĐẢO =====
 local ISLAND_DATA = {
     -- Sea 1
-    {name = "Jungle", minLevel = 10, maxLevel = 30, sea = 1, questNPC = "Jungle Quest Giver", mobs = {"Monkey", "Gorilla"}},
-    {name = "Pirate Village", minLevel = 30, maxLevel = 60, sea = 1, questNPC = "Pirate Village Quest Giver", mobs = {"Pirate", "Brute"}},
-    {name = "Desert", minLevel = 60, maxLevel = 90, sea = 1, questNPC = "Desert Quest Giver", mobs = {"Desert Bandit", "Desert Officer"}},
-    {name = "Frozen Village", minLevel = 90, maxLevel = 120, sea = 1, questNPC = "Frozen Village Quest Giver", mobs = {"Snow Bandit", "Snowman"}},
-    {name = "Marine Fortress", minLevel = 120, maxLevel = 150, sea = 1, questNPC = "Marine Fortress Quest Giver", mobs = {"Marine Officer", "Chief Petty Officer"}},
-    {name = "Skylands", minLevel = 150, maxLevel = 200, sea = 1, questNPC = "Skylands Quest Giver", mobs = {"Sky Bandit", "Dark Master"}},
-    {name = "Prison", minLevel = 190, maxLevel = 275, sea = 1, questNPC = "Prison Quest Giver", mobs = {"Prisoner", "Dangerous Prisoner"}},
-    {name = "Colosseum", minLevel = 225, maxLevel = 300, sea = 1, questNPC = "Colosseum Quest Giver", mobs = {"Toga Warrior", "Gladiator"}},
-    {name = "Magma Village", minLevel = 300, maxLevel = 375, sea = 1, questNPC = "Magma Village Quest Giver", mobs = {"Military Soldier", "Military Spy"}},
-    {name = "Underwater City", minLevel = 375, maxLevel = 450, sea = 1, questNPC = "Underwater City Quest Giver", mobs = {"Fisherman Warrior", "Fisherman Commando"}},
-    {name = "Fountain City", minLevel = 625, maxLevel = 700, sea = 1, questNPC = "Fountain City Quest Giver", mobs = {"Galley Pirate", "Galley Captain"}},
+    {name = "Jungle", minLevel = 10, maxLevel = 30},
+    {name = "Pirate Village", minLevel = 30, maxLevel = 60},
+    {name = "Desert", minLevel = 60, maxLevel = 90},
+    {name = "Frozen Village", minLevel = 90, maxLevel = 120},
+    {name = "Marine Fortress", minLevel = 120, maxLevel = 150},
+    {name = "Skylands", minLevel = 150, maxLevel = 200},
+    {name = "Prison", minLevel = 190, maxLevel = 275},
+    {name = "Colosseum", minLevel = 225, maxLevel = 300},
+    {name = "Magma Village", minLevel = 300, maxLevel = 375},
+    {name = "Underwater City", minLevel = 375, maxLevel = 450},
+    {name = "Fountain City", minLevel = 625, maxLevel = 700},
     -- Sea 2
-    {name = "Kingdom of Rose", minLevel = 700, maxLevel = 850, sea = 2, questNPC = "Kingdom of Rose Quest Giver", mobs = {"Raider", "Merc"}},
-    {name = "Green Zone", minLevel = 875, maxLevel = 925, sea = 2, questNPC = "Green Zone Quest Giver", mobs = {"Green Zone Enemy"}},
-    {name = "Graveyard", minLevel = 950, maxLevel = 975, sea = 2, questNPC = "Graveyard Quest Giver", mobs = {"Zombie"}},
-    {name = "Snow Mountain", minLevel = 1000, maxLevel = 1050, sea = 2, questNPC = "Snow Mountain Quest Giver", mobs = {"Winter Enemy"}},
-    {name = "Cursed Ship", minLevel = 1000, maxLevel = 1325, sea = 2, questNPC = "Cursed Ship Quest Giver", mobs = {"Cursed Crew"}},
-    {name = "Hot and Cold", minLevel = 1100, maxLevel = 1200, sea = 2, questNPC = "Hot and Cold Quest Giver", mobs = {"Elemental Enemy"}},
-    {name = "Ice Castle", minLevel = 1350, maxLevel = 1400, sea = 2, questNPC = "Ice Castle Quest Giver", mobs = {"Ice Enemy"}},
-    {name = "Forgotten Island", minLevel = 1425, maxLevel = 1475, sea = 2, questNPC = "Forgotten Island Quest Giver", mobs = {"Dark Step Enemy"}},
+    {name = "Kingdom of Rose", minLevel = 700, maxLevel = 850},
+    {name = "Green Zone", minLevel = 875, maxLevel = 925},
+    {name = "Graveyard", minLevel = 950, maxLevel = 975},
+    {name = "Snow Mountain", minLevel = 1000, maxLevel = 1050},
+    {name = "Cursed Ship", minLevel = 1000, maxLevel = 1325},
+    {name = "Hot and Cold", minLevel = 1100, maxLevel = 1200},
+    {name = "Ice Castle", minLevel = 1350, maxLevel = 1400},
+    {name = "Forgotten Island", minLevel = 1425, maxLevel = 1475},
     -- Sea 3
-    {name = "Port Town", minLevel = 1500, maxLevel = 1575, sea = 3, questNPC = "Port Town Quest Giver", mobs = {"Pirate Millionaire", "Pistol Billionaire"}},
-    {name = "Hydra Island", minLevel = 1575, maxLevel = 1700, sea = 3, questNPC = "Hydra Island Quest Giver", mobs = {"Dragon Crew Warrior", "Dragon Crew Archer", "Female Islander", "Giant Islander"}},
-    {name = "Great Tree", minLevel = 1700, maxLevel = 1775, sea = 3, questNPC = "Great Tree Quest Giver", mobs = {"Marine Commodore", "Marine Rear Admiral"}},
-    {name = "Floating Turtle", minLevel = 1775, maxLevel = 2000, sea = 3, questNPC = "Floating Turtle Quest Giver", mobs = {"Fishman Raider", "Fishman Captain", "Forest Pirate", "Mythological Pirate"}},
-    {name = "Haunted Castle", minLevel = 1975, maxLevel = 2075, sea = 3, questNPC = "Haunted Castle Quest Giver", mobs = {"Haunted Enemy"}},
-    {name = "Sea of Treats", minLevel = 2075, maxLevel = 2275, sea = 3, questNPC = "Sea of Treats Quest Giver", mobs = {"Treat Enemy"}},
-    {name = "Tiki Outpost", minLevel = 2450, maxLevel = 2700, sea = 3, questNPC = "Tiki Outpost Quest Giver", mobs = {"Tiki Enemy"}}
+    {name = "Port Town", minLevel = 1500, maxLevel = 1575},
+    {name = "Hydra Island", minLevel = 1575, maxLevel = 1700},
+    {name = "Great Tree", minLevel = 1700, maxLevel = 1775},
+    {name = "Floating Turtle", minLevel = 1775, maxLevel = 2000},
+    {name = "Haunted Castle", minLevel = 1975, maxLevel = 2075},
+    {name = "Sea of Treats", minLevel = 2075, maxLevel = 2275},
+    {name = "Tiki Outpost", minLevel = 2450, maxLevel = 2700}
 }
 
--- ============================================================
--- BIẾN TRẠNG THÁI FARM
--- ============================================================
-
+-- ===== BIẾN TOÀN CỤC =====
 local farmEnabled = false
 local farmThread = nil
-local questMode = "Có Quest"   -- "Có Quest" hoặc "Không Quest"
 local attackDelay = 0.5
-local isFarming = false
-local currentTarget = nil
+local questMode = "Có Quest"
 
--- ============================================================
--- UI TẠO BẰNG TAY
--- ============================================================
-
+-- ===== UI (TỰ TẠO) =====
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "doeakHub"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
--- Main Shadow
-local MainShadow = Instance.new("Frame")
-MainShadow.Size = UDim2.new(0, 380, 0, 480)
-MainShadow.Position = UDim2.new(0.5, -190, 0.5, -240)
-MainShadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-MainShadow.BackgroundTransparency = 0.3
-MainShadow.BorderSizePixel = 0
-MainShadow.Parent = ScreenGui
-local shadowCorner = Instance.new("UICorner")
-shadowCorner.CornerRadius = UDim.new(0, 12)
-shadowCorner.Parent = MainShadow
-
--- Main Frame
+-- Main Window
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(1, 0, 1, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 35)
+MainFrame.Size = UDim2.new(0, 450, 0, 350)
+MainFrame.Position = UDim2.new(0.5, -225, 0.5, -175)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 15, 40)
 MainFrame.BorderSizePixel = 0
-MainFrame.Parent = MainShadow
+MainFrame.Parent = ScreenGui
 local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 12)
 mainCorner.Parent = MainFrame
@@ -96,7 +70,7 @@ mainCorner.Parent = MainFrame
 -- Title Bar
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 40)
-TitleBar.BackgroundColor3 = Color3.fromRGB(30, 20, 55)
+TitleBar.BackgroundColor3 = Color3.fromRGB(40, 30, 70)
 TitleBar.BorderSizePixel = 0
 TitleBar.Parent = MainFrame
 local titleCorner = Instance.new("UICorner")
@@ -104,11 +78,11 @@ titleCorner.CornerRadius = UDim.new(0, 12)
 titleCorner.Parent = TitleBar
 
 local TitleText = Instance.new("TextLabel")
-TitleText.Size = UDim2.new(1, -60, 1, 0)
-TitleText.Position = UDim2.new(0, 15, 0, 0)
+TitleText.Size = UDim2.new(1, -50, 1, 0)
+TitleText.Position = UDim2.new(0, 10, 0, 0)
 TitleText.BackgroundTransparency = 1
 TitleText.Text = "🐉 doeak hub"
-TitleText.TextColor3 = Color3.fromRGB(240, 240, 255)
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleText.TextSize = 18
 TitleText.Font = Enum.Font.GothamBold
 TitleText.TextXAlignment = Enum.TextXAlignment.Left
@@ -130,199 +104,271 @@ CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- Content Area
-local ContentFrame = Instance.new("Frame")
-ContentFrame.Size = UDim2.new(1, -20, 1, -55)
-ContentFrame.Position = UDim2.new(0, 10, 0, 50)
-ContentFrame.BackgroundTransparency = 1
-ContentFrame.Parent = MainFrame
+-- Content
+local Content = Instance.new("Frame")
+Content.Size = UDim2.new(1, -10, 1, -50)
+Content.Position = UDim2.new(0, 5, 0, 45)
+Content.BackgroundTransparency = 1
+Content.Parent = MainFrame
 
-local Scroll = Instance.new("ScrollingFrame")
-Scroll.Size = UDim2.new(1, 0, 1, 0)
-Scroll.BackgroundTransparency = 1
-Scroll.ScrollBarThickness = 3
-Scroll.ScrollBarImageColor3 = Color3.fromRGB(138, 43, 226)
-Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Scroll.Parent = ContentFrame
-local scrollLayout = Instance.new("UIListLayout")
-scrollLayout.Padding = UDim.new(0, 10)
-scrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
-scrollLayout.Parent = Scroll
+-- Sidebar
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 120, 1, 0)
+Sidebar.BackgroundColor3 = Color3.fromRGB(30, 25, 55)
+Sidebar.BorderSizePixel = 0
+Sidebar.Parent = Content
+local sidebarCorner = Instance.new("UICorner")
+sidebarCorner.CornerRadius = UDim.new(0, 8)
+sidebarCorner.Parent = Sidebar
 
--- ===== HÀM TẠO UI COMPONENTS =====
+local TabList = Instance.new("Frame")
+TabList.Size = UDim2.new(1, -10, 1, -10)
+TabList.Position = UDim2.new(0, 5, 0, 5)
+TabList.BackgroundTransparency = 1
+TabList.Parent = Sidebar
 
-local function CreateLabel(text, color)
+local tabLayout = Instance.new("UIListLayout")
+tabLayout.Padding = UDim.new(0, 8)
+tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+tabLayout.Parent = TabList
+
+-- Right Panel
+local RightPanel = Instance.new("Frame")
+RightPanel.Size = UDim2.new(1, -130, 1, 0)
+RightPanel.Position = UDim2.new(0, 130, 0, 0)
+RightPanel.BackgroundColor3 = Color3.fromRGB(25, 20, 50)
+RightPanel.BackgroundTransparency = 0.5
+RightPanel.BorderSizePixel = 0
+RightPanel.Parent = Content
+local rightCorner = Instance.new("UICorner")
+rightCorner.CornerRadius = UDim.new(0, 8)
+rightCorner.Parent = RightPanel
+
+local PanelContainer = Instance.new("ScrollingFrame")
+PanelContainer.Size = UDim2.new(1, -20, 1, -20)
+PanelContainer.Position = UDim2.new(0, 10, 0, 10)
+PanelContainer.BackgroundTransparency = 1
+PanelContainer.ScrollBarThickness = 3
+PanelContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+PanelContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+PanelContainer.Parent = RightPanel
+local panelLayout = Instance.new("UIListLayout")
+panelLayout.Padding = UDim.new(0, 12)
+panelLayout.SortOrder = Enum.SortOrder.LayoutOrder
+panelLayout.Parent = PanelContainer
+
+-- ===== TAB SYSTEM =====
+local tabs = {}
+local currentTab = nil
+
+local function CreateTab(name, icon)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 36)
+    btn.BackgroundColor3 = Color3.fromRGB(20, 15, 40)
+    btn.Text = "  " .. icon .. "  " .. name
+    btn.TextColor3 = Color3.fromRGB(200, 200, 220)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.GothamSemibold
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.Parent = TabList
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = btn
+
+    local panel = Instance.new("Frame")
+    panel.Size = UDim2.new(1, 0, 0, 0)
+    panel.AutomaticSize = Enum.AutomaticSize.Y
+    panel.BackgroundTransparency = 1
+    panel.Visible = false
+    panel.Parent = PanelContainer
+    local panelLayoutInner = Instance.new("UIListLayout")
+    panelLayoutInner.Padding = UDim.new(0, 10)
+    panelLayoutInner.SortOrder = Enum.SortOrder.LayoutOrder
+    panelLayoutInner.Parent = panel
+
+    btn.MouseButton1Click:Connect(function()
+        for _, t in pairs(tabs) do
+            t.Panel.Visible = false
+            TweenService:Create(t.Button, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(20, 15, 40)}):Play()
+        end
+        panel.Visible = true
+        currentTab = name
+        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(80, 60, 140)}):Play()
+    end)
+
+    tabs[name] = {Button = btn, Panel = panel}
+    return panel
+end
+
+-- ===== TẠO CÁC TAB =====
+local FarmTab = CreateTab("Auto Farm", "⚔️")
+local InfoTab = CreateTab("Thông tin", "ℹ️")
+
+-- ===== HÀM TẠO UI COMPONENT =====
+local function AddLabel(parent, text, color, size)
     local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, 0, 0, 30)
+    lbl.Size = UDim2.new(1, 0, 0, 25)
     lbl.BackgroundTransparency = 1
     lbl.Text = text
-    lbl.TextColor3 = color or Color3.fromRGB(240, 240, 255)
-    lbl.TextSize = 14
+    lbl.TextColor3 = color or Color3.fromRGB(220, 220, 240)
+    lbl.TextSize = size or 14
     lbl.Font = Enum.Font.GothamSemibold
     lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.Parent = Scroll
+    lbl.Parent = parent
     return lbl
 end
 
-local function CreateToggle(labelText, defaultValue, callback)
+local function AddButton(parent, text, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 38)
+    btn.BackgroundColor3 = Color3.fromRGB(80, 60, 140)
+    btn.Text = text
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.TextSize = 14
+    btn.Font = Enum.Font.GothamBold
+    btn.Parent = parent
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = btn
+    btn.MouseButton1Click:Connect(callback)
+    return btn
+end
+
+local function AddToggle(parent, label, default, callback)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 40)
-    frame.BackgroundColor3 = Color3.fromRGB(30, 20, 55)
-    frame.Parent = Scroll
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = frame
+    frame.BackgroundTransparency = 1
+    frame.Parent = parent
 
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(0.7, 0, 1, 0)
     lbl.BackgroundTransparency = 1
-    lbl.Text = labelText
-    lbl.TextColor3 = Color3.fromRGB(240, 240, 255)
+    lbl.Text = label
+    lbl.TextColor3 = Color3.fromRGB(220, 220, 240)
     lbl.TextSize = 14
-    lbl.Font = Enum.Font.Gotham
+    lbl.Font = Enum.Font.GothamSemibold
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = frame
 
     local toggleBtn = Instance.new("TextButton")
-    toggleBtn.Size = UDim2.new(0, 50, 0, 26)
-    toggleBtn.Position = UDim2.new(1, -55, 0.5, -13)
-    toggleBtn.BackgroundColor3 = defaultValue and Color3.fromRGB(50, 255, 100) or Color3.fromRGB(80, 80, 80)
-    toggleBtn.Text = ""
-    toggleBtn.AutoButtonColor = false
+    toggleBtn.Size = UDim2.new(0, 60, 0, 28)
+    toggleBtn.Position = UDim2.new(1, -65, 0.5, -14)
+    toggleBtn.BackgroundColor3 = default and Color3.fromRGB(50, 200, 100) or Color3.fromRGB(60, 60, 80)
+    toggleBtn.Text = default and "ON" or "OFF"
+    toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+    toggleBtn.TextSize = 12
+    toggleBtn.Font = Enum.Font.GothamBold
     toggleBtn.Parent = frame
-    local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(1, 0)
-    toggleCorner.Parent = toggleBtn
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0)
+    corner.Parent = toggleBtn
 
-    local circle = Instance.new("Frame")
-    circle.Size = UDim2.new(0, 22, 0, 22)
-    circle.Position = defaultValue and UDim2.new(0, 26, 0.5, -11) or UDim2.new(0, 2, 0.5, -11)
-    circle.BackgroundColor3 = Color3.new(1, 1, 1)
-    circle.BorderSizePixel = 0
-    circle.Parent = toggleBtn
-    local circleCorner = Instance.new("UICorner")
-    circleCorner.CornerRadius = UDim.new(1, 0)
-    circleCorner.Parent = circle
-
-    local state = defaultValue
+    local state = default
     toggleBtn.MouseButton1Click:Connect(function()
         state = not state
-        toggleBtn.BackgroundColor3 = state and Color3.fromRGB(50, 255, 100) or Color3.fromRGB(80, 80, 80)
-        TweenService:Create(circle, TweenInfo.new(0.25), {
-            Position = state and UDim2.new(0, 26, 0.5, -11) or UDim2.new(0, 2, 0.5, -11)
-        }):Play()
-        if callback then callback(state) end
+        toggleBtn.BackgroundColor3 = state and Color3.fromRGB(50, 200, 100) or Color3.fromRGB(60, 60, 80)
+        toggleBtn.Text = state and "ON" or "OFF"
+        callback(state)
     end)
 
-    return frame
+    return toggleBtn
 end
 
-local function CreateDropdown(labelText, options, defaultOption, callback)
+local function AddDropdown(parent, label, options, default, callback)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 0, 40)
-    frame.BackgroundColor3 = Color3.fromRGB(30, 20, 55)
-    frame.Parent = Scroll
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = frame
+    frame.Size = UDim2.new(1, 0, 0, 45)
+    frame.BackgroundTransparency = 1
+    frame.Parent = parent
 
     local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(0.4, 0, 1, 0)
+    lbl.Size = UDim2.new(1, 0, 0, 20)
     lbl.BackgroundTransparency = 1
-    lbl.Text = labelText
-    lbl.TextColor3 = Color3.fromRGB(240, 240, 255)
-    lbl.TextSize = 14
+    lbl.Text = label
+    lbl.TextColor3 = Color3.fromRGB(200, 200, 220)
+    lbl.TextSize = 13
     lbl.Font = Enum.Font.Gotham
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = frame
 
     local dropdown = Instance.new("TextButton")
-    dropdown.Size = UDim2.new(0.55, 0, 0, 30)
-    dropdown.Position = UDim2.new(0.43, 0, 0.5, -15)
-    dropdown.BackgroundColor3 = Color3.fromRGB(18, 12, 35)
-    dropdown.Text = defaultOption or options[1]
-    dropdown.TextColor3 = Color3.fromRGB(240, 240, 255)
-    dropdown.TextSize = 12
+    dropdown.Size = UDim2.new(1, 0, 0, 25)
+    dropdown.Position = UDim2.new(0, 0, 0, 20)
+    dropdown.BackgroundColor3 = Color3.fromRGB(30, 25, 60)
+    dropdown.Text = default or options[1] or ""
+    dropdown.TextColor3 = Color3.new(1, 1, 1)
+    dropdown.TextSize = 13
     dropdown.Font = Enum.Font.Gotham
     dropdown.Parent = frame
-    local dropCorner = Instance.new("UICorner")
-    dropCorner.CornerRadius = UDim.new(0, 6)
-    dropCorner.Parent = dropdown
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = dropdown
 
-    local expanded = false
-    local optionFrame = nil
-
+    local currentOption = default or options[1] or ""
+    local menuOpen = false
     dropdown.MouseButton1Click:Connect(function()
-        expanded = not expanded
-        if expanded then
-            optionFrame = Instance.new("Frame")
-            optionFrame.Size = UDim2.new(0.55, 0, 0, #options * 30)
-            optionFrame.Position = UDim2.new(0.43, 0, 0.5, 15)
-            optionFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 35)
-            optionFrame.Parent = frame
-            local optCorner = Instance.new("UICorner")
-            optCorner.CornerRadius = UDim.new(0, 6)
-            optCorner.Parent = optionFrame
+        menuOpen = not menuOpen
+        if menuOpen then
+            -- Tạo dropdown list
+            local list = Instance.new("Frame")
+            list.Size = UDim2.new(1, 0, 0, #options * 28)
+            list.Position = UDim2.new(0, 0, 0, 25)
+            list.BackgroundColor3 = Color3.fromRGB(20, 15, 45)
+            list.BorderSizePixel = 0
+            list.ZIndex = 10
+            list.Parent = frame
+            local listCorner = Instance.new("UICorner")
+            listCorner.CornerRadius = UDim.new(0, 6)
+            listCorner.Parent = list
 
-            local layout = Instance.new("UIListLayout")
-            layout.Padding = UDim.new(0, 2)
-            layout.SortOrder = Enum.SortOrder.LayoutOrder
-            layout.Parent = optionFrame
-
-            for _, opt in ipairs(options) do
+            for i, opt in ipairs(options) do
                 local btn = Instance.new("TextButton")
-                btn.Size = UDim2.new(1, -4, 0, 28)
-                btn.Position = UDim2.new(0, 2, 0, 0)
-                btn.BackgroundColor3 = Color3.fromRGB(30, 20, 55)
+                btn.Size = UDim2.new(1, 0, 0, 28)
+                btn.BackgroundTransparency = 1
                 btn.Text = opt
-                btn.TextColor3 = Color3.fromRGB(240, 240, 255)
-                btn.TextSize = 12
+                btn.TextColor3 = opt == currentOption and Color3.fromRGB(180, 100, 255) or Color3.fromRGB(200, 200, 220)
+                btn.TextSize = 13
                 btn.Font = Enum.Font.Gotham
-                btn.Parent = optionFrame
-                local btnCorner = Instance.new("UICorner")
-                btnCorner.CornerRadius = UDim.new(0, 4)
-                btnCorner.Parent = btn
-
+                btn.Parent = list
                 btn.MouseButton1Click:Connect(function()
+                    currentOption = opt
                     dropdown.Text = opt
-                    if callback then callback(opt) end
-                    expanded = false
-                    if optionFrame then optionFrame:Destroy() end
+                    callback(opt)
+                    list:Destroy()
+                    menuOpen = false
                 end)
             end
         else
-            if optionFrame then optionFrame:Destroy() end
+            for _, child in pairs(frame:GetChildren()) do
+                if child:IsA("Frame") and child ~= frame and child ~= dropdown then
+                    child:Destroy()
+                end
+            end
         end
     end)
 
-    return frame
+    return dropdown
 end
 
-local function CreateSlider(labelText, minVal, maxVal, defaultVal, increment, callback)
+local function AddSlider(parent, label, min, max, default, callback)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 55)
-    frame.BackgroundColor3 = Color3.fromRGB(30, 20, 55)
-    frame.Parent = Scroll
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = frame
+    frame.BackgroundTransparency = 1
+    frame.Parent = parent
 
     local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(1, -10, 0, 20)
-    lbl.Position = UDim2.new(0, 5, 0, 2)
+    lbl.Size = UDim2.new(1, 0, 0, 20)
     lbl.BackgroundTransparency = 1
-    lbl.Text = labelText .. ": " .. defaultVal
-    lbl.TextColor3 = Color3.fromRGB(240, 240, 255)
-    lbl.TextSize = 14
-    lbl.Font = Enum.Font.Gotham
+    lbl.Text = label .. ": " .. tostring(default)
+    lbl.TextColor3 = Color3.fromRGB(220, 220, 240)
+    lbl.TextSize = 13
+    lbl.Font = Enum.Font.GothamSemibold
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.Parent = frame
 
     local sliderBtn = Instance.new("TextButton")
-    sliderBtn.Size = UDim2.new(1, -10, 0, 20)
-    sliderBtn.Position = UDim2.new(0, 5, 0, 28)
-    sliderBtn.BackgroundColor3 = Color3.fromRGB(18, 12, 35)
+    sliderBtn.Size = UDim2.new(1, 0, 0, 25)
+    sliderBtn.Position = UDim2.new(0, 0, 0, 22)
+    sliderBtn.BackgroundColor3 = Color3.fromRGB(40, 35, 70)
     sliderBtn.Text = ""
     sliderBtn.Parent = frame
     local sliderCorner = Instance.new("UICorner")
@@ -330,63 +376,48 @@ local function CreateSlider(labelText, minVal, maxVal, defaultVal, increment, ca
     sliderCorner.Parent = sliderBtn
 
     local fill = Instance.new("Frame")
-    fill.Size = UDim2.new((defaultVal - minVal) / (maxVal - minVal), 0, 1, 0)
-    fill.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
+    fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+    fill.BackgroundColor3 = Color3.fromRGB(120, 80, 200)
     fill.BorderSizePixel = 0
     fill.Parent = sliderBtn
     local fillCorner = Instance.new("UICorner")
     fillCorner.CornerRadius = UDim.new(1, 0)
     fillCorner.Parent = fill
 
-    local currentVal = defaultVal
-    sliderBtn.MouseButton1Click:Connect(function()
-        local newVal = math.random(math.floor(minVal/increment), math.floor(maxVal/increment)) * increment
-        newVal = math.floor(newVal / increment) * increment
-        if newVal < minVal then newVal = minVal end
-        if newVal > maxVal then newVal = maxVal end
-        currentVal = newVal
-        lbl.Text = labelText .. ": " .. newVal
-        fill.Size = UDim2.new((newVal - minVal) / (maxVal - minVal), 0, 1, 0)
-        if callback then callback(newVal) end
+    local dragging = false
+    local mouse = player:GetMouse()
+    sliderBtn.MouseButton1Down:Connect(function()
+        dragging = true
+    end)
+    sliderBtn.MouseButton1Up:Connect(function()
+        dragging = false
+    end)
+    mouse.Move:Connect(function()
+        if dragging then
+            local x = math.clamp((mouse.X - sliderBtn.AbsolutePosition.X) / sliderBtn.AbsoluteSize.X, 0, 1)
+            local val = min + (max - min) * x
+            val = math.round(val / 0.1) * 0.1
+            fill.Size = UDim2.new(x, 0, 1, 0)
+            lbl.Text = label .. ": " .. tostring(val)
+            callback(val)
+        end
     end)
 
-    return frame
+    return sliderBtn
 end
 
-local function CreateButton(text, callback)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 40)
-    btn.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
-    btn.Text = text
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.TextSize = 16
-    btn.Font = Enum.Font.GothamBold
-    btn.Parent = Scroll
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 8)
-    btnCorner.Parent = btn
-    btn.MouseButton1Click:Connect(callback)
-    return btn
-end
+-- ===== NỘI DUNG TAB AUTO FARM =====
+-- Info level
+AddLabel(FarmTab, "Level hiện tại: " .. tostring(player.Level), Color3.fromRGB(100, 200, 255), 14)
 
--- ===== XÂY DỰNG UI =====
-
-CreateLabel("🐉 doeak hub - Auto Farm", Color3.fromRGB(180, 100, 255))
-CreateLabel("Level hiện tại: " .. player.Level, Color3.fromRGB(150, 200, 255))
-
--- Toggle Auto Farm
-local toggleFarm = CreateToggle("Bật Auto Farm", false, function(state)
-    farmEnabled = state
-    if state then
+-- Toggle Farm
+AddToggle(FarmTab, "Bật Auto Farm", false, function(val)
+    farmEnabled = val
+    if val then
         if not farmThread then
             farmThread = task.spawn(function()
                 while farmEnabled do
-                    local success, err = pcall(function()
-                        FarmTick()
-                    end)
-                    if not success then
-                        warn("Lỗi farm: " .. tostring(err))
-                    end
+                    pcall(FarmTick)
                     task.wait(0.1)
                 end
             end)
@@ -400,33 +431,36 @@ local toggleFarm = CreateToggle("Bật Auto Farm", false, function(state)
     end
 end)
 
--- Dropdown Quest Mode
-local questDropdown = CreateDropdown("Chế độ Quest", {"Có Quest", "Không Quest"}, "Có Quest", function(val)
+-- Dropdown Quest
+AddDropdown(FarmTab, "Chế độ Quest", {"Có Quest", "Không Quest"}, "Có Quest", function(val)
     questMode = val
 end)
 
--- Slider Delay đánh
-local delaySlider = CreateSlider("Delay đánh (giây)", 0.3, 5, 0.5, 0.1, function(val)
+-- Slider delay
+AddSlider(FarmTab, "Delay đánh (s)", 0.3, 5, 0.5, function(val)
     attackDelay = val
 end)
 
--- Button về đảo an toàn
-CreateButton("Về đảo an toàn", function()
+-- Button về đảo
+AddButton(FarmTab, "Về đảo an toàn", function()
     GoToSafeZone()
 end)
 
--- ============================================================
--- LOGIC AUTO FARM
--- ============================================================
+-- ===== NỘI DUNG TAB THÔNG TIN =====
+AddLabel(InfoTab, "🐉 doeak hub v1.0", Color3.fromRGB(180, 100, 255), 18)
+AddLabel(InfoTab, "Auto Farm Blox Fruit", Color3.fromRGB(200, 200, 220), 14)
+AddLabel(InfoTab, "Hướng dẫn:", Color3.fromRGB(180, 180, 200), 14)
+AddLabel(InfoTab, "1. Bật Auto Farm", Color3.fromRGB(160, 160, 180), 13)
+AddLabel(InfoTab, "2. Chọn chế độ Quest", Color3.fromRGB(160, 160, 180), 13)
+AddLabel(InfoTab, "3. Điều chỉnh delay đánh", Color3.fromRGB(160, 160, 180), 13)
+AddLabel(InfoTab, "4. Farm tự động tìm đảo phù hợp", Color3.fromRGB(160, 160, 180), 13)
 
+-- ===== LOGIC AUTO FARM =====
 local function getIslandForLevel(level)
     local best = nil
-    local bestDiff = math.huge
     for _, island in ipairs(ISLAND_DATA) do
         if level >= island.minLevel and level <= island.maxLevel then
-            local diff = island.maxLevel - level
-            if diff < bestDiff then
-                bestDiff = diff
+            if not best or island.maxLevel < best.maxLevel then
                 best = island
             end
         end
@@ -447,29 +481,30 @@ local function getIslandPosition(islandName)
 end
 
 local function moveTo(position)
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     local distance = (position - hrp.Position).Magnitude
     if distance < 2 then return end
-    
+
     local speed = 250
     local duration = distance / speed
     if duration < 0.05 then duration = 0.05 end
-    
-    local tweenInfo = TweenInfo.new(
-        duration,
-        Enum.EasingStyle.Linear,
-        Enum.EasingDirection.Out
-    )
+
+    local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
     local tween = TweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(position)})
     tween:Play()
     tween.Completed:Wait()
 end
 
 local function findNearestMob()
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
     local nearest = nil
     local minDist = math.huge
     local charPos = hrp.Position
-    
+
     for _, child in ipairs(Workspace:GetDescendants()) do
         if child:IsA("Model") and child:FindFirstChild("Humanoid") and child:FindFirstChild("HumanoidRootPart") then
             local humanoid = child:FindFirstChild("Humanoid")
@@ -488,45 +523,24 @@ local function findNearestMob()
     return nearest
 end
 
-local function gatherMobs(targetPoint, radius)
-    local gathered = {}
-    for _, child in ipairs(Workspace:GetDescendants()) do
-        if child:IsA("Model") and child:FindFirstChild("Humanoid") and child:FindFirstChild("HumanoidRootPart") then
-            local humanoid = child:FindFirstChild("Humanoid")
-            if humanoid and humanoid.Health > 0 then
-                local root = child:FindFirstChild("HumanoidRootPart")
-                if root and (root.Position - targetPoint).Magnitude < radius then
-                    table.insert(gathered, child)
-                end
-            end
-        end
-    end
-    return gathered
-end
-
 local function attackMob(mob)
-    if not mob or not mob:FindFirstChild("HumanoidRootPart") then return false end
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp or not mob or not mob:FindFirstChild("HumanoidRootPart") then return false end
     local mobRoot = mob:FindFirstChild("HumanoidRootPart")
     if not mobRoot then return false end
-    
-    -- Vị trí an toàn: bay lên cao 15 studs
+
     local safePosition = mobRoot.Position + Vector3.new(0, 15, 0)
     moveTo(safePosition)
-    
+
     local startTime = tick()
     while tick() - startTime < attackDelay do
         if not mob or not mob:FindFirstChild("Humanoid") or mob:FindFirstChild("Humanoid").Health <= 0 then
             break
         end
-        -- Mô phỏng tấn công (có thể thay bằng remote click nếu biết)
-        local fakeAttack = Instance.new("Part")
-        fakeAttack.Size = Vector3.new(2, 2, 2)
-        fakeAttack.CFrame = mobRoot.CFrame + Vector3.new(0, 5, 0)
-        fakeAttack.Parent = Workspace
-        game:GetService("Debris"):AddItem(fakeAttack, 0.1)
+        -- Mô phỏng tấn công (thực tế cần remote)
         task.wait(0.1)
     end
-    
     return true
 end
 
@@ -534,42 +548,28 @@ function FarmTick()
     local level = player.Level
     local island = getIslandForLevel(level)
     if not island then
-        warn("Không tìm thấy đảo phù hợp với level " .. level)
         task.wait(1)
         return
     end
-    
+
     local islandPos = getIslandPosition(island.name)
     if not islandPos then
-        warn("Không tìm thấy vị trí đảo " .. island.name)
         task.wait(1)
         return
     end
     moveTo(islandPos)
-    
+
     local mob = findNearestMob()
     if not mob then
-        local gathered = gatherMobs(islandPos, 100)
-        if #gathered > 0 then
-            mob = gathered[1]
-        else
-            task.wait(0.5)
-            return
-        end
+        task.wait(0.5)
+        return
     end
-    
-    if mob then
-        attackMob(mob)
-    end
-    
-    task.wait(0.1)
+
+    attackMob(mob)
 end
 
 function StopFarm()
-    isFarming = false
-    if currentTarget then
-        currentTarget = nil
-    end
+    -- Dừng farm
 end
 
 function GoToSafeZone()
@@ -582,10 +582,7 @@ function GoToSafeZone()
     end
 end
 
--- ============================================================
--- DRAG SYSTEM
--- ============================================================
-
+-- ===== DRAG SYSTEM =====
 local dragging = false
 local dragInput, dragStart, startPos
 
@@ -593,7 +590,7 @@ TitleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
-        startPos = MainShadow.Position
+        startPos = MainFrame.Position
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -611,22 +608,22 @@ end)
 UserInputService.InputChanged:Connect(function(input)
     if input == dragInput and dragging then
         local delta = input.Position - dragStart
-        MainShadow.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
--- ============================================================
--- INSERT KEY TOGGLE
--- ============================================================
-
+-- ===== PHÍM TẮT INSERT =====
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.Insert then
-        MainShadow.Visible = not MainShadow.Visible
+        MainFrame.Visible = not MainFrame.Visible
     end
 end)
 
--- ============================================================
--- STARTUP
--- ============================================================
+-- ===== MỞ TAB MẶC ĐỊNH =====
+task.wait(0.1)
+if tabs["Auto Farm"] then
+    tabs["Auto Farm"].Button.MouseButton1Click:Fire()
+end
 
-print("✅ doeak hub loaded! Press Insert to toggle GUI.")
+print("✅ doeak hub loaded successfully!")
+print("Press Insert to toggle GUI")
